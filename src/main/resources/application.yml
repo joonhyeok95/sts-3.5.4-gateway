@@ -12,7 +12,15 @@ spring:
             - Path=/api/users/**, /api/roles/**
           filters:
             - JwtAuthenticationFilter
-
+            - name: CircuitBreaker
+              args:
+                name: userRoleCircuitBreaker
+                fallbackUri: forward:/fallback/userRoleFallback
+                statusCodes:
+                  - 500
+                  - NOT_FOUND
+  autoconfigure: # circuitBreaker 가 spring security 요소를 자동으로 불러와 제거
+    exclude: org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration
 server.port: 9000
 
 logging:
