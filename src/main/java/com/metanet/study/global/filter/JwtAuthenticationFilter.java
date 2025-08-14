@@ -1,4 +1,4 @@
-package com.metanet.study.global.component;
+package com.metanet.study.global.filter;
 
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
