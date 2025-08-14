@@ -19,10 +19,37 @@ spring:
                 statusCodes:
                   - 500
                   - NOT_FOUND
-  autoconfigure: # circuitBreaker 가 spring security 요소를 자동으로 불러와 제거
-    exclude: org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration
+        - id: public-api
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/public/**, /health, /swagger-ui/**
+          filters:
+            # 인증 필터 없음
+    circuitbreaker:
+      resilience4j:
+        instances:
+          userRoleCircuitBreaker:
+            registerHealthIndicator: true
+            slidingWindowSize: 100            # 최근 100개 요청 평가
+            minimumNumberOfCalls: 10          # 최소 10개 요청 이후 평가 시작
+            failureRateThreshold: 50          # 50% 이상 실패 시 서킷 오픈
+            waitDurationInOpenState: 60s      # 60초 동안 서킷 오픈 상태 유지
+            permittedNumberOfCallsInHalfOpenState: 5  # Half-Open 시 5회 시도 후 판단
+            slowCallRateThreshold: 100        # 지연 호출 비율 임계값
+            slowCallDurationThreshold: 2s     # 지연 호출 기준 시간
+# Spring Actuator 에서 Security를 필수 의존성으로 적용되어야 함
+#  autoconfigure: # circuitBreaker 가 spring security 요소를 자동으로 불러와 제거
+#    exclude: org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration
+    
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"    # 모든 엔드포인트 노출
+        # 또는 include: health,info,metrics 등 원하는 것만 선택적 노출 가능
+
 server.port: 9000
 
 logging:
   level: 
-    root: DEBUG # feignclient FULL 로그를 보려면 DEBUG
+    root: INFO # feignclient FULL 로그를 보려면 DEBUG
